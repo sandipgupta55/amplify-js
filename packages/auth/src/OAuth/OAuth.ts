@@ -63,7 +63,8 @@ export default class OAuth {
 
 	private isValidScopes(scopes: string[]) {
 		return (
-			Array.isArray(scopes) && scopes.every(scope => typeof scope === 'string')
+			Array.isArray(scopes) &&
+			scopes.every((scope) => typeof scope === 'string')
 		);
 	}
 
@@ -122,7 +123,7 @@ export default class OAuth {
     { redirect_uri: 'http://localhost:3000/', response_type: 'code', ...} */
 		const { code } = (parse(currentUrl).query || '')
 			.split('&')
-			.map(pairings => pairings.split('='))
+			.map((pairings) => pairings.split('='))
 			.reduce((accum, [k, v]) => ({ ...accum, [k]: v }), { code: undefined });
 
 		const currentUrlPathname = parse(currentUrl).pathname || '/';
@@ -141,17 +142,17 @@ export default class OAuth {
 			{},
 			`Retrieving tokens from ${oAuthTokenEndpoint}`
 		);
-
+		console.log('============1');
 		const client_id = isCognitoHostedOpts(this._config)
 			? this._cognitoClientId
 			: this._config.clientID;
-
+		console.log('============2');
 		const redirect_uri = isCognitoHostedOpts(this._config)
 			? this._config.redirectSignIn
 			: this._config.redirectUri;
-
+		console.log('============3', redirect_uri);
 		const code_verifier = oAuthStorage.getPKCE();
-
+		console.log('============4', code_verifier);
 		const oAuthTokenBody = {
 			grant_type: 'authorization_code',
 			code,
@@ -168,7 +169,7 @@ export default class OAuth {
 		const body = Object.entries(oAuthTokenBody)
 			.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
 			.join('&');
-
+		console.log('==========5', oAuthTokenEndpoint, body);
 		const {
 			access_token,
 			refresh_token,
@@ -183,6 +184,7 @@ export default class OAuth {
 		})) as any).json();
 
 		if (error) {
+			console.log('===============6 ERROR', error);
 			throw new Error(error);
 		}
 
@@ -198,7 +200,7 @@ export default class OAuth {
 		const { id_token, access_token } = (parse(currentUrl).hash || '#')
 			.substr(1) // Remove # from returned code
 			.split('&')
-			.map(pairings => pairings.split('='))
+			.map((pairings) => pairings.split('='))
 			.reduce((accum, [k, v]) => ({ ...accum, [k]: v }), {
 				id_token: undefined,
 				access_token: undefined,
@@ -221,11 +223,11 @@ export default class OAuth {
 						...(parse(currentUrl).hash || '#')
 							.substr(1)
 							.split('&')
-							.map(entry => entry.split('='))
+							.map((entry) => entry.split('='))
 							.reduce((acc, [k, v]) => ((acc[k] = v), acc), {}),
 						...(parse(currentUrl).query || '')
 							.split('&')
-							.map(entry => entry.split('='))
+							.map((entry) => entry.split('='))
 							.reduce((acc, [k, v]) => ((acc[k] = v), acc), {}),
 				  } as any)
 				: {};
